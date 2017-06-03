@@ -26,6 +26,7 @@ export API_SECRET=insertsecrethere
 ## Startup
 ```
 node index.js -c BTC_ETH -p 10 -l 30
+node index.js -h #get a list of options and examples
 ```
 
 ## Notes
