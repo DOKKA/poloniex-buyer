@@ -1,20 +1,35 @@
-# poloniex-buyer
-use a percentage of your bitcoin to buy altcoins at the lowest available price and optionally set a limit sell order
-Usage index.js -c <currencyPair> -p <percentage> [options]
+# poloniex-buyer  
+Use a percentage of your Bitcoin to buy Altcoins at the lowest available price, and optionally set a limit sell order!  
 
-Options:
-  -c, --currencyPair         the currency pair to trade on            [required]
-  -p, --baseBuyPercentage    the percentage of your base currency you want to
-                             use for purchasing                       [required]
-  -l, --sellLimitPercentage  the percentage higher you want to sell your
-                             currency for
-  --key                      your poloniex api key
-  --secret                   your poloniex secret
-  -h, --help                 Show help                                 [boolean]
+## Requirements  
 
-Examples:
-  index.js -c BTC_ETH -p 10        buy 10% of your bitcoin reserves in ethereum
-                                   at the lowest asking price
-  index.js -c BTC_ETH -p 10 -l 30  buy 10% of your bitcoin reserves in ethereum
-                                   at the lowest asking price and set a limit to
-                                   sell it at a price 30% higher
+Have Node.js installed  
+```
+git clone https://github.com/DOKKA/poloniex-buyer
+cd poloniex-buyer
+```
+
+## Configuration 
+
+### Windows 
+```
+SET API_KEY="insertkeyhere"
+SET API_SECRET="insertsecrethere"
+```
+
+### Linux/Mac
+```
+export API_KEY=insertkeyhere
+export API_SECRET=insertsecrethere
+```
+
+## Startup
+```
+node index.js -c BTC_ETH -p 10 -l 30
+```
+
+## Notes
+There have been plenty of times when I wanted to buy some coins but 
+I was unable to devote the time to decide how much I want to invest in an altcoin,
+how high to set the sell limit, and I want to get a fair price too. Especially when I'm at work.
+ This gives you the ability to buy a percentage of your reserves and quickly set a sell limit.
