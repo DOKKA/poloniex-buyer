@@ -25,7 +25,6 @@ export API_SECRET=insertsecrethere
 
 ## Startup
 ```
-node index.js -c BTC_ETH -p 10 -l 30
 node index.js -h #get a list of options and examples
 ```
 
@@ -34,3 +33,8 @@ There have been plenty of times when I wanted to buy some coins but
 I was unable to devote the time to decide how much I want to invest in an altcoin,
 how high to set the sell limit, and I want to get a fair price too. Especially when I'm at work.
  This gives you the ability to buy a percentage of your reserves and quickly set a sell limit.
+
+## Warning!
+This is a dangerous command! I am not responsible for the trades this program makes!  
+Use it at your own risk!  
+Please read through the code and decide for yourself if you should use it!  
