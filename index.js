@@ -136,16 +136,13 @@ function setParameters(argv){
 }
 
 function listCommand(argv){
-// poloniexPromise.returnTicker().then(function(data){
-//     console.log(data);
-// })
 
 Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTicker()]).then(function(data){
 
     var balances = data[0];
     var ticker = data[1];
 
-    var xxx = _(balances).mapValues(function(balanceObj){
+    var myBalances = _(balances).mapValues(function(balanceObj){
         return {
             available: parseFloat(balanceObj.available),
             onOrders: parseFloat(balanceObj.onOrders),
@@ -155,7 +152,7 @@ Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTic
         return balanceObj.btcValue > 0;
     }).value();
 
-    var activeMarkets = Object.keys(xxx);
+    var activeMarkets = Object.keys(myBalances);
 
     var markets = _(ticker).mapValues(function(tickerObj,key){
         var uuu = key.split('_');
@@ -168,9 +165,9 @@ Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTic
     }).pickBy(function(tickerObj,key){
         return tickerObj.baseCurrency === 'BTC' && _.includes(activeMarkets, tickerObj.tradeCurrency);
     }).mapValues(function(market, key){
-        return Object.assign(market, xxx[market.tradeCurrency]);
+        return Object.assign(market, myBalances[market.tradeCurrency]);
     }).value();
-    //console.log(markets);
+
 
     var table  = new Table({head: ['Market'.cyan, 'Price'.cyan, '% Change'.cyan, 'BTC Value'.cyan]});
 
@@ -193,27 +190,8 @@ Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTic
     },'desc').forEach(function(row){
         table.push(row);
     });
-
     
-
-    // _.forEach(markets,function(market, key){
-    //     var pc = market.percentChange*100;
-    //     var pc2 = '';
-    //     if(pc > 0){
-    //         pc2 = pc.toFixed(2).green;
-    //     } else {
-    //         pc2 = pc.toFixed(2).red;
-    //     }
-    //     table.push([key, market.price, pc2, market.btcValue]);
-    // })
-
-    // var table = new Table({head: ['Coin'.cyan, 'Available'.cyan,'On Orders'.cyan, 'BTC Value'.cyan]});
-
-    // _.forEach(xxx,function(value,key){
-    //     table.push([key,value.available,value.onOrders ,value.btcValue]);
-    // });
-    
-
+    //print the table
     console.log(table.toString());
 })
 
