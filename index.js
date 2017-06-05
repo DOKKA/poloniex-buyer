@@ -174,7 +174,10 @@ Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTic
 
     var table  = new Table({head: ['Market'.cyan, 'Price'.cyan, '% Change'.cyan, 'BTC Value'.cyan]});
 
-    _.forEach(markets,function(market, key){
+    var tableRows = [];
+    for(var key in markets){
+        var market = markets[key];
+
         var pc = market.percentChange*100;
         var pc2 = '';
         if(pc > 0){
@@ -182,8 +185,27 @@ Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTic
         } else {
             pc2 = pc.toFixed(2).red;
         }
-        table.push([key, market.price, pc2, market.btcValue]);
-    })
+        tableRows.push([key, market.price, pc2, market.btcValue]);
+    }
+
+    _.orderBy(tableRows,function(row){
+        return row[3];
+    },'desc').forEach(function(row){
+        table.push(row);
+    });
+
+    
+
+    // _.forEach(markets,function(market, key){
+    //     var pc = market.percentChange*100;
+    //     var pc2 = '';
+    //     if(pc > 0){
+    //         pc2 = pc.toFixed(2).green;
+    //     } else {
+    //         pc2 = pc.toFixed(2).red;
+    //     }
+    //     table.push([key, market.price, pc2, market.btcValue]);
+    // })
 
     // var table = new Table({head: ['Coin'.cyan, 'Available'.cyan,'On Orders'.cyan, 'BTC Value'.cyan]});
 
