@@ -1,12 +1,42 @@
-
 var Promise = require("bluebird");
-var argv = require('./lib/setup-yargs')();
-
+//var argv = require('./lib/setup-yargs')();
+var yargs = require('yargs');
 var apiKey = process.env.API_KEY || argv.key;
 var secret = process.env.API_SECRET || argv.secret;
+var _ = require('lodash');
+var Table = require('cli-table2');
+var colors = require('colors');
 
 var poloniexPromise = require('./lib/poloniex-promise')(apiKey,secret);
 
+var argv=yargs.usage('$0 <cmd> [args]')
+    .command('list [args]', 'list your balances',function(yargs){
+        return yargs;
+    },function(argv){
+        listCommand(argv);
+    })
+    .command('buy [args]', 'buy some coins',function(yargs){
+        return yargs.option('currencyPair',{
+            alias: 'c',
+            demandOption: true,
+            describe: 'the currency pair to trade on',
+            type: 'string'
+        }).option('baseBuyPercentage',{
+            alias: 'p',
+            demandOption: true,
+            describe: 'the percentage of your base currency to use for purchasing',
+            type: 'number'
+        }).option('sellLimitPercentage',{
+            alias: 'l',
+            demandOption: false,
+            describe: 'the percentage higher you want to sell the currency for',
+            type: 'number'
+        });
+    
+    },function(argv){
+        buyCommand(argv);
+    })
+    .help().argv;
 
 
 function calculateLimits(obj){
@@ -82,7 +112,7 @@ function placeBuy(obj){
    });
 }
 
-function setParameters(){
+function setParameters(argv){
    return Promise.all([poloniexPromise.returnBalances(),poloniexPromise.returnTicker()]).then(function(data){
       var obj = {};
       var currArr = argv.c.split('_');
@@ -105,31 +135,99 @@ function setParameters(){
    });
 }
 
-if(!apiKey || !secret){
-   console.log('you must pass an api key and secret to use this command.')
-} else {
-   var parameters = setParameters();
+function listCommand(argv){
+// poloniexPromise.returnTicker().then(function(data){
+//     console.log(data);
+// })
 
-   if(argv.l){
-      parameters
-          .then(calculateBuy)
-          .then(placeBuy)
-          .then(calculateLimits)
-          .then(setSellLimit)
-          .then(function(data){
-             console.log('done')
-          });
+Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTicker()]).then(function(data){
 
-   } else {
-      parameters
-          .then(calculateBuy)
-          .then(placeBuy)
-          .then(function(data){
-             console.log('done')
-          });
+    var balances = data[0];
+    var ticker = data[1];
 
-   }
+    var xxx = _(balances).mapValues(function(balanceObj){
+        return {
+            available: parseFloat(balanceObj.available),
+            onOrders: parseFloat(balanceObj.onOrders),
+            btcValue: parseFloat(balanceObj.btcValue),
+        }
+    }).pickBy(function(balanceObj,key){
+        return balanceObj.btcValue > 0;
+    }).value();
+
+    var activeMarkets = Object.keys(xxx);
+
+    var markets = _(ticker).mapValues(function(tickerObj,key){
+        var uuu = key.split('_');
+        return {
+            price: parseFloat(tickerObj.last),
+            percentChange: parseFloat(tickerObj.percentChange),
+            baseCurrency: uuu[0],
+            tradeCurrency: uuu[1]
+        };
+    }).pickBy(function(tickerObj,key){
+        return tickerObj.baseCurrency === 'BTC' && _.includes(activeMarkets, tickerObj.tradeCurrency);
+    }).mapValues(function(market, key){
+        return Object.assign(market, xxx[market.tradeCurrency]);
+    }).value();
+    //console.log(markets);
+
+    var table  = new Table({head: ['Market'.cyan, 'Price'.cyan, '% Change'.cyan, 'BTC Value'.cyan]});
+
+    _.forEach(markets,function(market, key){
+        var pc = market.percentChange*100;
+        var pc2 = '';
+        if(pc > 0){
+            pc2 = pc.toFixed(2).green;
+        } else {
+            pc2 = pc.toFixed(2).red;
+        }
+        table.push([key, market.price, pc2, market.btcValue]);
+    })
+
+    // var table = new Table({head: ['Coin'.cyan, 'Available'.cyan,'On Orders'.cyan, 'BTC Value'.cyan]});
+
+    // _.forEach(xxx,function(value,key){
+    //     table.push([key,value.available,value.onOrders ,value.btcValue]);
+    // });
+    
+
+    console.log(table.toString());
+})
+
+
 }
+
+
+function buyCommand(argv){
+    if(!apiKey || !secret){
+    console.log('you must pass an api key and secret to use this command.')
+    } else {
+    var parameters = setParameters(argv);
+
+    if(argv.l){
+        parameters
+            .then(calculateBuy)
+            .then(placeBuy)
+            .then(calculateLimits)
+            .then(setSellLimit)
+            .then(function(data){
+                console.log('done')
+            });
+
+    } else {
+        parameters
+            .then(calculateBuy)
+            .then(placeBuy)
+            .then(function(data){
+                console.log('done')
+            });
+
+    }
+    }
+}
+
+
 
 
 

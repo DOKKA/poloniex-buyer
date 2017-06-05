@@ -11,6 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.0",
+    "cli-table2": "^0.2.0",
+    "colors": "^1.1.2",
+    "lodash": "^4.17.4",
     "poloniex.js": "0.0.7",
     "yargs": "^8.0.1"
   }
