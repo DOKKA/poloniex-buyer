@@ -142,6 +142,8 @@ Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTic
     var balances = data[0];
     var ticker = data[1];
 
+    var usdBTCPrice = parseFloat(ticker['USDT_BTC'].last);
+
     var myBalances = _(balances).mapValues(function(balanceObj){
         return {
             available: parseFloat(balanceObj.available),
@@ -169,7 +171,7 @@ Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTic
     }).value();
 
 
-    var table  = new Table({head: ['Market'.cyan, 'Price'.cyan, '% Change'.cyan, 'BTC Value'.cyan]});
+    var table  = new Table({head: ['Market'.cyan, 'Price'.cyan, '% Change'.cyan, 'BTC Value'.cyan, 'USD Value'.cyan]});
 
     var tableRows = [];
     for(var key in markets){
@@ -182,7 +184,7 @@ Promise.all([poloniexPromise.returnCompleteBalances(), poloniexPromise.returnTic
         } else {
             pc2 = pc.toFixed(2).red;
         }
-        tableRows.push([key, market.price, pc2, market.btcValue]);
+        tableRows.push([key, market.price.toFixed(8), pc2, market.btcValue, '$'+((market.btcValue * usdBTCPrice).toFixed(2))]);
     }
 
     _.orderBy(tableRows,function(row){
